@@ -1,22 +1,92 @@
 from tkinter import *
 from Switch import Switch
+from Router import Router
 
 
-def on_click_router(event):
+def create_router(name, lbls):
+    rtr = Router(name)
+    rtr.pic_label.pack()
+    rtr.pic_label.bind("<Button-1>", lambda e: on_click_router(e, lbls))
+    rtr.pic_label.bind("<Enter>", rtr.highlight_device)
+    rtr.pic_label.bind("<Leave>", rtr.unhighlight_device)
+    return rtr
+
+
+def create_switch(name, lbls):
+    swtch = Switch(name)
+    swtch.pic_label.pack()
+    swtch.pic_label.bind("<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
+    swtch.pic_label.bind("<Enter>", swtch.highlight_device)
+    swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
+    return swtch
+
+
+def on_click_router(event, lbls):
     print("router")
 
 
-def on_click_switch(event, switch, frame):
-    switch.display_port_info(frame)
+def on_click_switch(event, lbls, switch, frame):
+    for i in range(4):
+        lbls[0][i + 1].configure(text=i+1)
+        lbls[1][i + 1].configure(text=switch.ports[i][0])
+        lbls[2][i + 1].configure(text=switch.ports[i][1])
 
-    add_switch = Button(frame, text="Add device", command=lambda: add_device(frame, switch))
+    lbls[0][5].configure(text=switch.name)
+
+    add_switch = Button(frame, text="Add device", command=lambda: add_device(frame, lbls, switch))
     add_switch.grid(row=5, column=1)
 
-    remove_port = Button(frame, text="Remove device", command=lambda: remove_device(frame, switch))
+    remove_port = Button(frame, text="Remove device", command=lambda: remove_device(frame, lbls, switch))
     remove_port.grid(row=5, column=2)
 
 
-def add_device(port_frame, switch):
+def set_port_info(frame):
+    lbls = []
+
+    col_0 = Frame(frame, width=20)
+    col_0.grid(row=0, column=0)
+    col0_label = Label(col_0, text="Port #", font=('Arial', 14, 'bold'))
+    lbls.append([col0_label])
+
+    col_1 = Frame(frame, width=20)
+    col_1.grid(row=0, column=1)
+    col1_label = Label(col_1, text="Device Name", font=('Arial', 14, 'bold'))
+    lbls.append([col1_label])
+
+    col_2 = Frame(frame, width=20)
+    col_2.grid(row=0, column=2)
+    col2_label = Label(col_2, text="Mac Address", font=('Arial', 14, 'bold'))
+    lbls.append([col2_label])
+
+    for i in range(4):
+        port_num = Frame(frame, width=20)
+        port_num.grid(row=i + 1, column=0)
+        num_label = Label(port_num, text=f"")
+        lbls[0].append(num_label)
+
+        port_name = Frame(frame, width=20)
+        port_name.grid(row=i + 1, column=1)
+        name_label = Label(port_name, text="")
+        lbls[1].append(name_label)
+
+        port_mac = Frame(frame, width=20)
+        port_mac.grid(row=i + 1, column=2)
+        mac_label = Label(port_mac, text="")
+        lbls[2].append(mac_label)
+
+    switch_name = Frame(frame, width=20)
+    switch_name.grid(row=5, column=0)
+    switch_label = Label(switch_name, text="", font=('Arial', 14, 'bold'))
+    lbls[0].append(switch_label)
+
+    for column in lbls:
+        for label in column:
+            label.pack()
+
+    return lbls
+
+
+def add_device(port_frame, lbls, switch):
     editor = Tk()
     editor.title("Add device")
     editor.geometry("300x200")
@@ -42,12 +112,12 @@ def add_device(port_frame, switch):
     port_name.grid(row=2, column=2, columnspan=2)
 
     submit_btn = Button(editor, text="Add device",
-                        command=lambda: quit_window(port_frame, editor, switch,
-                                                    "add", port_number, device_type, port_name))
+                        command=lambda: quit_window(port_frame, editor, lbls, switch, "add",
+                                                    port_number, device_type, port_name))
     submit_btn.grid(row=3, column=1, columnspan=2, pady=45)
 
 
-def remove_device(port_frame, switch):
+def remove_device(port_frame, lbls, switch):
     editor = Tk()
     editor.title("Remove device")
     editor.geometry("300x200")
@@ -59,19 +129,22 @@ def remove_device(port_frame, switch):
     port_number.grid(row=0, column=2, columnspan=2, pady=15)
 
     submit_btn = Button(editor, text="REMOVE device",
-                        command=lambda: quit_window(port_frame, editor, switch, "remove", port_number))
+                        command=lambda: quit_window(port_frame, editor, lbls, switch, "remove", port_number))
     submit_btn.grid(row=1, column=1, columnspan=2, padx=15, pady=45)
 
 
-def quit_window(port_frame, frame, switch, edit_type, *args):
+def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
     inputs = []
     for var in args:
         inputs.append(var.get())
 
     if edit_type == "add":
         switch.edit_device(port_frame, int(inputs[0]), inputs[1], inputs[2])
+        lbls[1][int(inputs[0])].configure(text=inputs[2])
     else:
         switch.remove_device(port_frame, int(inputs[0]))
+        lbls[1][int(inputs[0])].configure(text="None")
+        lbls[2][int(inputs[0])].configure(text="None")
 
     frame.destroy()
 
@@ -84,20 +157,11 @@ if __name__ == "__main__":
     device_info = Frame(root, width=200, height=150)
     device_info.pack()
 
-    router = PhotoImage(file="img/router.png")
-    router_label = Label(image=router)
-    router_label.pack()
-    router_label.bind("<Button-1>", on_click_router)
+    labels = set_port_info(device_info)
 
-    switch_1 = Switch("Switch 1")
-    switch_1.pic_label.pack()
-    switch_1.pic_label.bind("<Button-1>", lambda e: on_click_switch(e, switch_1, device_info))
-    switch_1.pic_label.bind("<Enter>", switch_1.highlight_device)
-    switch_1.pic_label.bind("<Leave>", switch_1.unhighlight_device)
-
-    switch_2 = Switch("Switch 2")
-    switch_2.pic_label.pack()
-    switch_2.pic_label.bind("<Button-1>", lambda e: on_click_switch(e, switch_2, device_info))
+    router = create_router("Router", labels)
+    switch_1 = create_switch("Switch 1", labels)
+    switch_2 = create_switch("Switch 2", labels)
 
     root.mainloop()
 
