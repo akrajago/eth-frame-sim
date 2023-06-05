@@ -5,8 +5,8 @@ from Router import Router
 
 def create_router(name, lbls):
     rtr = Router(name)
-    rtr.pic_label.pack()
-    rtr.pic_label.bind("<Button-1>", lambda e: on_click_router(e, lbls))
+    rtr.place_router(1000, 150)
+    rtr.pic_label.bind("<Button-1>", lambda e: on_click_router(e, rtr, lbls))
     rtr.pic_label.bind("<Enter>", rtr.highlight_device)
     rtr.pic_label.bind("<Leave>", rtr.unhighlight_device)
     return rtr
@@ -14,15 +14,23 @@ def create_router(name, lbls):
 
 def create_switch(name, lbls):
     swtch = Switch(name)
-    swtch.pic_label.pack()
+    # swtch.pic_label.pack()
     swtch.pic_label.bind("<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
     swtch.pic_label.bind("<Enter>", swtch.highlight_device)
     swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
     return swtch
 
 
-def on_click_router(event, lbls):
-    print("router")
+def add_link(frame, device_1, device_2):
+    device_2.place_switch(device_1.x - 500, device_1.y)
+    canvas.create_line(device_2.x, device_2.y + 50, device_1.x, device_1.y + 50, width=5)
+
+
+def on_click_router(event, router, lbls):
+    for i in range(2):
+        lbls[0][i + 1].configure(text=i+1)
+        lbls[1][i + 1].configure(text=router.ports[i])
+        lbls[2][i + 1].configure(text="None")
 
 
 def on_click_switch(event, lbls, switch, frame):
@@ -152,7 +160,10 @@ def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
 if __name__ == "__main__":
     root = Tk()
     root.title("Ethernet Frame Simulator")
-    root.geometry("750x500")
+    root.geometry("1500x1000")
+
+    canvas = Canvas(root, width=1500, height=1000)
+    canvas.place(x=0, y=0)
 
     device_info = Frame(root, width=200, height=150)
     device_info.pack()
@@ -161,7 +172,8 @@ if __name__ == "__main__":
 
     router = create_router("Router", labels)
     switch_1 = create_switch("Switch 1", labels)
-    switch_2 = create_switch("Switch 2", labels)
+    add_link(canvas, router, switch_1)
+    # switch_2 = create_switch("Switch 2", labels)
 
     root.mainloop()
 
