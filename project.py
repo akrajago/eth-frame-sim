@@ -3,34 +3,45 @@ from Switch import Switch
 from Router import Router
 
 
-def create_router(name, lbls):
+def create_router(name, cnvs, lbls):
     rtr = Router(name)
-    rtr.place_router(1000, 150)
-    rtr.pic_label.bind("<Button-1>", lambda e: on_click_router(e, rtr, lbls))
-    rtr.pic_label.bind("<Enter>", rtr.highlight_device)
-    rtr.pic_label.bind("<Leave>", rtr.unhighlight_device)
+    rtr.place_router(cnvs, 1000, 200)
+    canvas.tag_bind(rtr.canvas_img, "<Button-1>", lambda e: on_click_router(e, rtr, lbls))
+    # canvas.tag_bind(rtr.canvas_img, "<Enter>", rtr.highlight_device)
+    # canvas.tag_bind(rtr.canvas_img, "<Leave>", rtr.unhighlight_device)
     return rtr
 
 
-def create_switch(name, lbls):
+def create_switch(name, reference, cnvs, lbls):
     swtch = Switch(name)
-    # swtch.pic_label.pack()
-    swtch.pic_label.bind("<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
-    swtch.pic_label.bind("<Enter>", swtch.highlight_device)
-    swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
+    # if type(reference) == Router:
+    swtch.place_switch(cnvs, 500, 200)
+    # swtch.place_switch(cnvs, reference.x - 500, reference.y)
+    canvas.tag_bind(swtch.canvas_img, "<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
+    # swtch.pic_label.bind("<Enter>", swtch.highlight_device)
+    # swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
     return swtch
 
 
 def add_link(frame, device_1, device_2):
-    device_2.place_switch(device_1.x - 500, device_1.y)
+    device_2.place_switch(frame, device_1.x - 500, device_1.y)
     canvas.create_line(device_2.x, device_2.y + 50, device_1.x, device_1.y + 50, width=5)
 
 
 def on_click_router(event, router, lbls):
+    lbls[0][5].configure(text="")
+
     for i in range(2):
         lbls[0][i + 1].configure(text=i+1)
         lbls[1][i + 1].configure(text=router.ports[i])
         lbls[2][i + 1].configure(text="None")
+
+        lbls[0][i + 3].configure(text="")
+        lbls[1][i + 3].configure(text="")
+        lbls[2][i + 3].configure(text="")
+
+        if len(lbls[i + 1]) == 6:
+            lbls[i + 1][5].grid_forget()
 
 
 def on_click_switch(event, lbls, switch, frame):
@@ -41,11 +52,11 @@ def on_click_switch(event, lbls, switch, frame):
 
     lbls[0][5].configure(text=switch.name)
 
-    add_switch = Button(frame, text="Add device", command=lambda: add_device(frame, lbls, switch))
-    add_switch.grid(row=5, column=1)
+    lbls[1].append(Button(frame, text="Add device", command=lambda: add_device(frame, lbls, switch)))
+    lbls[1][5].grid(row=5, column=1)
 
-    remove_port = Button(frame, text="Remove device", command=lambda: remove_device(frame, lbls, switch))
-    remove_port.grid(row=5, column=2)
+    lbls[2].append(Button(frame, text="Remove device", command=lambda: remove_device(frame, lbls, switch)))
+    lbls[2][5].grid(row=5, column=2)
 
 
 def set_port_info(frame):
@@ -170,9 +181,9 @@ if __name__ == "__main__":
 
     labels = set_port_info(device_info)
 
-    router = create_router("Router", labels)
-    switch_1 = create_switch("Switch 1", labels)
-    add_link(canvas, router, switch_1)
+    router = create_router("Router", canvas, labels)
+    switch_1 = create_switch("Switch 1", router, canvas, labels)
+    # add_link(canvas, router, switch_1)
     # switch_2 = create_switch("Switch 2", labels)
 
     root.mainloop()
