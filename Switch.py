@@ -29,5 +29,15 @@ class Switch:
         self.x = x_coord
         self.y = y_coord
         self.canvas_img = cnvs.create_image((self.x, self.y), image=self.image)
-        # self.pic_label.place(x=x_coord, y=y_coord)
+
+    def port(self, n):
+        if n == 1:
+            return self.x - 147
+        elif n == 2:
+            return self.x - 60
+        elif n == 3:
+            return self.x + 30
+        elif n == 4:
+            return self.x + 117
+
 

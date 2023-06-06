@@ -14,18 +14,17 @@ def create_router(name, cnvs, lbls):
 
 def create_switch(name, reference, cnvs, lbls):
     swtch = Switch(name)
-    # if type(reference) == Router:
-    swtch.place_switch(cnvs, 500, 200)
-    # swtch.place_switch(cnvs, reference.x - 500, reference.y)
+    add_link(cnvs, reference, 1, swtch, 4)
     canvas.tag_bind(swtch.canvas_img, "<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
     # swtch.pic_label.bind("<Enter>", swtch.highlight_device)
     # swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
     return swtch
 
 
-def add_link(frame, device_1, device_2):
+def add_link(frame, device_1, port_1, device_2, port_2):
     device_2.place_switch(frame, device_1.x - 500, device_1.y)
-    canvas.create_line(device_2.x, device_2.y + 50, device_1.x, device_1.y + 50, width=5)
+    canvas.create_line(device_2.port(port_2), device_2.y + 17,
+                       device_1.port(port_1), device_1.y + 17, width=5)
 
 
 def on_click_router(event, router, lbls):
