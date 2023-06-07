@@ -7,7 +7,7 @@ class Switch:
         self.image = PhotoImage(file="img/switch.png")
         self.pic_label = Label(image=self.image)
         self.name = name
-        self.ports = [["None", "None"] for i in range(4)]
+        self.ports = [["None", "None", "None"] for i in range(4)]
         self.x = None
         self.y = None
         self.canvas_img = None
@@ -18,7 +18,7 @@ class Switch:
     def unhighlight_device(self, event):
         self.pic_label.configure(bg="white")
 
-    def edit_device(self, frame, port, dev_type, name):
+    def edit_device(self, port, dev_type, name):
         self.ports[port - 1][0] = name
         print(dev_type)
 
@@ -31,13 +31,13 @@ class Switch:
         self.canvas_img = cnvs.create_image((self.x, self.y), image=self.image)
 
     def port(self, n):
-        if n == 1:
+        if int(n) == 1:
             return self.x - 147
-        elif n == 2:
+        elif int(n) == 2:
             return self.x - 60
-        elif n == 3:
+        elif int(n) == 3:
             return self.x + 30
-        elif n == 4:
+        elif int(n) == 4:
             return self.x + 117
 
 

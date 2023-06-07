@@ -12,27 +12,35 @@ def create_router(name, cnvs, lbls):
     return rtr
 
 
-def create_switch(name, reference, cnvs, lbls):
+def create_switch(name, reference, cnvs, lbls, hrzntl=False):
     swtch = Switch(name)
-    add_link(cnvs, reference, 1, swtch, 4)
+    add_link(cnvs, reference, 1, swtch, 4, horizontal=hrzntl)
+    # reference.edit_device()
     canvas.tag_bind(swtch.canvas_img, "<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
     # swtch.pic_label.bind("<Enter>", swtch.highlight_device)
     # swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
     return swtch
 
 
-def add_link(frame, device_1, port_1, device_2, port_2):
-    device_2.place_switch(frame, device_1.x - 500, device_1.y)
-    canvas.create_line(device_2.port(port_2), device_2.y + 17,
-                       device_1.port(port_1), device_1.y + 17, width=5)
+def add_link(frame, device_1, port_1, device_2, port_2, horizontal=False):
+    if horizontal:
+        device_2.place_switch(frame, device_1.x - 500, device_1.y)
+        canvas.create_line(device_2.port(port_2), device_2.y + 17,
+                           device_1.port(port_1), device_1.y + 17, width=5)
+    elif not port_2:
+        pc_img = PhotoImage(file="img/pc.png")
+        device_1.ports[int(port_1) - 1][2] = pc_img
+        canvas.create_image((device_1.port(port_1), device_1.y + 100), image=pc_img)
+    else:
+        pass
 
 
-def on_click_router(event, router, lbls):
+def on_click_router(event, rtr, lbls):
     lbls[0][5].configure(text="")
 
     for i in range(2):
         lbls[0][i + 1].configure(text=i+1)
-        lbls[1][i + 1].configure(text=router.ports[i])
+        lbls[1][i + 1].configure(text=rtr.ports[i])
         lbls[2][i + 1].configure(text="None")
 
         lbls[0][i + 3].configure(text="")
@@ -157,7 +165,7 @@ def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
         inputs.append(var.get())
 
     if edit_type == "add":
-        switch.edit_device(port_frame, int(inputs[0]), inputs[1], inputs[2])
+        switch.edit_device(int(inputs[0]), inputs[1], inputs[2])
         lbls[1][int(inputs[0])].configure(text=inputs[2])
     else:
         switch.remove_device(port_frame, int(inputs[0]))
@@ -165,6 +173,9 @@ def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
         lbls[2][int(inputs[0])].configure(text="None")
 
     frame.destroy()
+
+    if inputs[1] == "pc":
+        add_link(frame, switch, inputs[0], 0, 0)
 
 
 if __name__ == "__main__":
@@ -181,8 +192,11 @@ if __name__ == "__main__":
     labels = set_port_info(device_info)
 
     router = create_router("Router", canvas, labels)
-    switch_1 = create_switch("Switch 1", router, canvas, labels)
-    # add_link(canvas, router, switch_1)
+    switch_1 = create_switch("Switch 1", router, canvas, labels, hrzntl=True)
+    router.edit_device(1, "switch", switch_1.name)
+    pc = PhotoImage(file="img/pc.png")
+    switch_1.edit_device(4, "router", router.name)
+
     # switch_2 = create_switch("Switch 2", labels)
 
     root.mainloop()

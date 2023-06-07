@@ -11,12 +11,17 @@ class Router:
         self.x = None
         self.y = None
         self.canvas_img = None
+        self.test = None
 
     def highlight_device(self, event):
         self.pic_label.configure(bg="pink")
 
     def unhighlight_device(self, event):
         self.pic_label.configure(bg="white")
+
+    def edit_device(self, port, dev_type, name):
+        self.ports[port - 1] = name
+        print(dev_type)
 
     def place_router(self, cnvs, x_coord, y_coord):
         self.x = x_coord
