@@ -18,8 +18,9 @@ class Switch:
     def unhighlight_device(self, event):
         self.pic_label.configure(bg="white")
 
-    def edit_device(self, port, dev_type, name):
+    def edit_device(self, port, dev_type, name, mac):
         self.ports[port - 1][0] = name
+        self.ports[port - 1][1] = mac
         print(dev_type)
 
     def remove_device(self, frame, port):

@@ -1,38 +1,44 @@
 from tkinter import *
 from Switch import Switch
 from Router import Router
+from Mac import Mac
 
 
-def create_router(name, cnvs, lbls):
+def create_router(name, cnvs, lbls, mac):
     rtr = Router(name)
     rtr.place_router(cnvs, 1000, 200)
-    canvas.tag_bind(rtr.canvas_img, "<Button-1>", lambda e: on_click_router(e, rtr, lbls))
+    cnvs.tag_bind(rtr.canvas_img, "<Button-1>", lambda e: on_click_router(e, rtr, lbls))
     # canvas.tag_bind(rtr.canvas_img, "<Enter>", rtr.highlight_device)
     # canvas.tag_bind(rtr.canvas_img, "<Leave>", rtr.unhighlight_device)
     return rtr
 
 
-def create_switch(name, reference, cnvs, lbls, hrzntl=False):
+def create_switch(name, reference, cnvs, lbls, mac, hrzntl=False):
     swtch = Switch(name)
+    # TODO: change ports (is port_2 unnecessary?)
     add_link(cnvs, reference, 1, swtch, 4, horizontal=hrzntl)
     # reference.edit_device()
-    canvas.tag_bind(swtch.canvas_img, "<Button-1>", lambda e: on_click_switch(e, lbls, swtch, device_info))
+    cnvs.tag_bind(swtch.canvas_img, "<Button-1>", lambda e: on_click_switch(e, cnvs, lbls, mac, swtch, device_info))
     # swtch.pic_label.bind("<Enter>", swtch.highlight_device)
     # swtch.pic_label.bind("<Leave>", swtch.unhighlight_device)
     return swtch
 
 
-def add_link(frame, device_1, port_1, device_2, port_2, horizontal=False):
+def add_link(cnvs, device_1, port_1, device_2, port_2, horizontal=False):
     if horizontal:
-        device_2.place_switch(frame, device_1.x - 500, device_1.y)
-        canvas.create_line(device_2.port(port_2), device_2.y + 17,
+        device_2.place_switch(cnvs, device_1.x - 500, device_1.y)
+        cnvs.create_line(device_2.port(port_2), device_2.y + 17,
                            device_1.port(port_1), device_1.y + 17, width=5)
     elif not port_2:
         pc_img = PhotoImage(file="img/pc.png")
         device_1.ports[int(port_1) - 1][2] = pc_img
-        canvas.create_image((device_1.port(port_1), device_1.y + 100), image=pc_img)
+        cnvs.create_image((device_1.port(port_1), device_1.y + 100), image=pc_img)
+        cnvs.create_line(device_1.port(port_1), device_1.y + 100,
+                         device_1.port(port_1), device_1.y + 17, width=5)
     else:
-        pass
+        device_2.place_switch(cnvs, device_1.x, device_1.y + 200)
+        cnvs.create_line(device_2.port(port_2), device_2.y + 17,
+                         device_1.port(port_1), device_1.y + 17, width=5)
 
 
 def on_click_router(event, rtr, lbls):
@@ -51,7 +57,7 @@ def on_click_router(event, rtr, lbls):
             lbls[i + 1][5].grid_forget()
 
 
-def on_click_switch(event, lbls, switch, frame):
+def on_click_switch(event, cnvs, lbls, mac, switch, frame):
     for i in range(4):
         lbls[0][i + 1].configure(text=i+1)
         lbls[1][i + 1].configure(text=switch.ports[i][0])
@@ -59,10 +65,10 @@ def on_click_switch(event, lbls, switch, frame):
 
     lbls[0][5].configure(text=switch.name)
 
-    lbls[1].append(Button(frame, text="Add device", command=lambda: add_device(frame, lbls, switch)))
+    lbls[1].append(Button(frame, text="Add device", command=lambda: add_device(frame, cnvs, lbls, mac, switch)))
     lbls[1][5].grid(row=5, column=1)
 
-    lbls[2].append(Button(frame, text="Remove device", command=lambda: remove_device(frame, lbls, switch)))
+    lbls[2].append(Button(frame, text="Remove device", command=lambda: remove_device(frame, cnvs, lbls, mac, switch)))
     lbls[2][5].grid(row=5, column=2)
 
 
@@ -112,7 +118,7 @@ def set_port_info(frame):
     return lbls
 
 
-def add_device(port_frame, lbls, switch):
+def add_device(port_frame, cnvs, lbls, mac, switch):
     editor = Tk()
     editor.title("Add device")
     editor.geometry("300x200")
@@ -138,12 +144,12 @@ def add_device(port_frame, lbls, switch):
     port_name.grid(row=2, column=2, columnspan=2)
 
     submit_btn = Button(editor, text="Add device",
-                        command=lambda: quit_window(port_frame, editor, lbls, switch, "add",
-                                                    port_number, device_type, port_name))
+                        command=lambda: quit_window(port_frame, editor, cnvs, lbls, mac, switch,
+                                                    "add", port_number, device_type, port_name))
     submit_btn.grid(row=3, column=1, columnspan=2, pady=45)
 
 
-def remove_device(port_frame, lbls, switch):
+def remove_device(port_frame, cnvs, lbls, mac, switch):
     editor = Tk()
     editor.title("Remove device")
     editor.geometry("300x200")
@@ -155,18 +161,27 @@ def remove_device(port_frame, lbls, switch):
     port_number.grid(row=0, column=2, columnspan=2, pady=15)
 
     submit_btn = Button(editor, text="REMOVE device",
-                        command=lambda: quit_window(port_frame, editor, lbls, switch, "remove", port_number))
+                        command=lambda: quit_window(port_frame, editor, cnvs, lbls, mac,
+                                                    switch, "remove", port_number))
     submit_btn.grid(row=1, column=1, columnspan=2, padx=15, pady=45)
 
 
-def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
+def quit_window(port_frame, frame, cnvs, lbls, mac, switch, edit_type, *args):
     inputs = []
     for var in args:
         inputs.append(var.get())
 
     if edit_type == "add":
-        switch.edit_device(int(inputs[0]), inputs[1], inputs[2])
         lbls[1][int(inputs[0])].configure(text=inputs[2])
+
+        if inputs[1] == "pc":
+            mac_add = mac.create_mac(inputs[2])
+            lbls[2][int(inputs[0])].configure(text=mac_add)
+            switch.edit_device(int(inputs[0]), inputs[1], inputs[2], mac_add)
+        else:
+            switch.edit_device(int(inputs[0]), inputs[1], inputs[2], None)
+            switch_new = create_switch(inputs[2], switch, cnvs, lbls, mac)
+            switch_new.edit_device(int(inputs[0]), inputs[1], switch.name, None)
     else:
         switch.remove_device(port_frame, int(inputs[0]))
         lbls[1][int(inputs[0])].configure(text="None")
@@ -175,7 +190,9 @@ def quit_window(port_frame, frame, lbls, switch, edit_type, *args):
     frame.destroy()
 
     if inputs[1] == "pc":
-        add_link(frame, switch, inputs[0], 0, 0)
+        add_link(cnvs, switch, inputs[0], 0, 0)
+    else:
+        pass
 
 
 if __name__ == "__main__":
@@ -190,15 +207,12 @@ if __name__ == "__main__":
     device_info.pack()
 
     labels = set_port_info(device_info)
+    mac_oracle = Mac()
 
-    router = create_router("Router", canvas, labels)
-    switch_1 = create_switch("Switch 1", router, canvas, labels, hrzntl=True)
+    router = create_router("Router", canvas, labels, mac_oracle)
+    switch_1 = create_switch("Switch 1", router, canvas, labels, mac_oracle, hrzntl=True)
     router.edit_device(1, "switch", switch_1.name)
-    pc = PhotoImage(file="img/pc.png")
-    switch_1.edit_device(4, "router", router.name)
-
-    # switch_2 = create_switch("Switch 2", labels)
+    switch_1.edit_device(4, "router", router.name, mac_oracle.create_mac(router.name))
 
     root.mainloop()
-
 
