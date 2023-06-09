@@ -24,7 +24,7 @@ class Switch:
         print(dev_type)
 
     def remove_device(self, frame, port):
-        self.ports[port - 1] = ["None", "None"]
+        self.ports[port - 1] = ["None", "None", "None"]
 
     def place_switch(self, cnvs, x_coord, y_coord):
         self.x = x_coord
