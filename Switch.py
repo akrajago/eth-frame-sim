@@ -5,18 +5,12 @@ class Switch:
 
     def __init__(self, name):
         self.image = PhotoImage(file="img/switch.png")
-        self.pic_label = Label(image=self.image)
         self.name = name
         self.ports = [["None", "None", "None"] for i in range(4)]
         self.x = None
         self.y = None
         self.canvas_img = None
-
-    def highlight_device(self, event):
-        self.pic_label.configure(bg="pink")
-
-    def unhighlight_device(self, event):
-        self.pic_label.configure(bg="white")
+        self.mac_table = {}
 
     def edit_device(self, port, dev_type, name, mac):
         self.ports[port - 1][0] = name

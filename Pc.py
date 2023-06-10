@@ -9,6 +9,10 @@ class Pc:
         self.x = None
         self.y = None
         self.canvas_img = None
+        self.switch = None
+
+    def edit_device(self, switch):
+        self.switch = switch
 
     def place_pc(self, cnvs, x_coord, y_coord):
         self.x = x_coord
