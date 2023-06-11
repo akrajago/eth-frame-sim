@@ -3,6 +3,7 @@ from Switch import Switch
 from Router import Router
 from Pc import Pc
 from Mac import Mac
+import time
 
 
 class Application:
@@ -14,14 +15,16 @@ class Application:
         self.device_info = Frame(root, width=200, height=150)
         self.device_info.pack()
 
-        self.mac_table = Frame(root, width=300, height=250, bg="pink")
+        self.mac_table = Frame(root, width=300, height=250)
         self.mac_table.place(x=0, y=0)
 
-        self.labels = []
+        self.port_labels = []
+        self.mac_labels = []
         self.devices = []
         self.mac_oracle = Mac()
 
-        self.set_port_info(self.device_info)
+        self.set_port_info()
+        self.set_mac_info()
 
     def create_router(self, name):
         rtr = Router(name)
@@ -53,6 +56,10 @@ class Application:
         self.canvas.tag_bind(pc.canvas_img, "<Double-Button-1>", lambda e: self.create_ethernet_frame(e, pc))
         return pc
 
+    def highlight_red(self, device):
+        self.canvas.itemconfigure(device.canvas_img, image=device.image_red)
+        self.canvas.after(1000, lambda: self.canvas.itemconfigure(device.canvas_img, image=device.image))
+
     def add_link(self, device_1, port_1, device_2, port_2, horizontal=False):
         if horizontal:
             device_2.place_switch(self.canvas, device_1.x - 500, device_1.y)
@@ -72,77 +79,115 @@ class Application:
                                     device_1.port(port_1), device_1.y + 17, width=5)
 
     def on_click_router(self, event, rtr):
-        self.labels[0][5].configure(text="")
+        self.port_labels[0][5].configure(text="")
 
         for i in range(2):
-            self.labels[0][i + 1].configure(text=i + 1)
-            self.labels[1][i + 1].configure(text=rtr.ports[i][0])
-            self.labels[2][i + 1].configure(text="None")
+            self.port_labels[0][i + 1].configure(text=i + 1)
+            self.port_labels[1][i + 1].configure(text=rtr.ports[i][0])
+            self.port_labels[2][i + 1].configure(text="None")
 
-            self.labels[0][i + 3].configure(text="")
-            self.labels[1][i + 3].configure(text="")
-            self.labels[2][i + 3].configure(text="")
+            self.port_labels[0][i + 3].configure(text="")
+            self.port_labels[1][i + 3].configure(text="")
+            self.port_labels[2][i + 3].configure(text="")
 
-            if self.labels[i + 1][5]:
-                self.labels[i + 1][5].grid_forget()
+            if self.port_labels[i + 1][5]:
+                self.port_labels[i + 1][5].grid_forget()
+
+        for j in range(10):
+            self.mac_labels[0][j + 1].configure(text="")
+            self.mac_labels[1][j + 1].configure(text="")
 
     def on_click_switch(self, event, switch):
         for i in range(4):
-            self.labels[0][i + 1].configure(text=i + 1)
-            self.labels[1][i + 1].configure(text=switch.ports[i][0])
-            self.labels[2][i + 1].configure(text=switch.ports[i][1])
+            self.port_labels[0][i + 1].configure(text=i + 1)
+            self.port_labels[1][i + 1].configure(text=switch.ports[i][0])
+            self.port_labels[2][i + 1].configure(text=switch.ports[i][1])
 
-        self.labels[0][5].configure(text=switch.name)
+        self.port_labels[0][5].configure(text=switch.name)
 
-        self.labels[1][5] = Button(self.device_info, text="Add device", command=lambda: self.add_device(switch))
-        self.labels[1][5].grid(row=5, column=1)
+        self.port_labels[1][5] = Button(self.device_info, text="Add device", command=lambda: self.add_device(switch))
+        self.port_labels[1][5].grid(row=5, column=1)
 
-        self.labels[2][5] = Button(self.device_info, text="Remove device", command=lambda: self.remove_device(switch))
-        self.labels[2][5].grid(row=5, column=2)
+        self.port_labels[2][5] = Button(self.device_info, text="Remove device", command=lambda: self.remove_device(switch))
+        self.port_labels[2][5].grid(row=5, column=2)
 
-    def set_port_info(self, frame):
-        col_0 = Frame(frame, width=20)
+        for i, address in enumerate(switch.mac_table):
+            self.mac_labels[0][i + 1].configure(text=address)
+            self.mac_labels[1][i + 1].configure(text=switch.mac_table[address])
+
+        for j in range(len(switch.mac_table), 10):
+            self.mac_labels[0][j + 1].configure(text="")
+            self.mac_labels[1][j + 1].configure(text="")
+
+    def set_port_info(self):
+        col_0 = Frame(self.device_info, width=20)
         col_0.grid(row=0, column=0)
         col0_label = Label(col_0, text="Port #", font=("Arial", 14, "bold"))
-        self.labels.append([col0_label])
+        self.port_labels.append([col0_label])
 
-        col_1 = Frame(frame, width=20)
+        col_1 = Frame(self.device_info, width=20)
         col_1.grid(row=0, column=1)
         col1_label = Label(col_1, text="Device Name", font=("Arial", 14, "bold"))
-        self.labels.append([col1_label])
+        self.port_labels.append([col1_label])
 
-        col_2 = Frame(frame, width=20)
+        col_2 = Frame(self.device_info, width=20)
         col_2.grid(row=0, column=2)
         col2_label = Label(col_2, text="Mac Address", font=("Arial", 14, "bold"))
-        self.labels.append([col2_label])
+        self.port_labels.append([col2_label])
 
         for i in range(4):
-            port_num = Frame(frame, width=20)
+            port_num = Frame(self.device_info, width=20)
             port_num.grid(row=i + 1, column=0)
             num_label = Label(port_num, text=f"")
-            self.labels[0].append(num_label)
+            self.port_labels[0].append(num_label)
 
-            port_name = Frame(frame, width=20)
+            port_name = Frame(self.device_info, width=20)
             port_name.grid(row=i + 1, column=1)
             name_label = Label(port_name, text="")
-            self.labels[1].append(name_label)
+            self.port_labels[1].append(name_label)
 
-            port_mac = Frame(frame, width=20)
+            port_mac = Frame(self.device_info, width=20)
             port_mac.grid(row=i + 1, column=2)
             mac_label = Label(port_mac, text="")
-            self.labels[2].append(mac_label)
+            self.port_labels[2].append(mac_label)
 
-        switch_name = Frame(frame, width=20)
+        switch_name = Frame(self.device_info, width=20)
         switch_name.grid(row=5, column=0)
         switch_label = Label(switch_name, text="", font=("Arial", 14, "bold"))
-        self.labels[0].append(switch_label)
+        self.port_labels[0].append(switch_label)
 
-        for column in self.labels:
+        for column in self.port_labels:
             for label in column:
                 label.pack()
 
-        self.labels[1].append(None)
-        self.labels[2].append(None)
+        self.port_labels[1].append(None)
+        self.port_labels[2].append(None)
+
+    def set_mac_info(self):
+        col_0 = Frame(self.mac_table, width=20)
+        col_0.grid(row=0, column=0)
+        col0_label = Label(col_0, text="Mac Address", font=("Arial", 14, "bold"))
+        self.mac_labels.append([col0_label])
+
+        col_1 = Frame(self.mac_table, width=20)
+        col_1.grid(row=0, column=1)
+        col1_label = Label(col_1, text="Port #", font=("Arial", 14, "bold"))
+        self.mac_labels.append([col1_label])
+
+        for i in range(10):
+            mac_add = Frame(self.mac_table, width=20)
+            mac_add.grid(row=i + 1, column=0)
+            address_label = Label(mac_add, text=f"")
+            self.mac_labels[0].append(address_label)
+
+            port_num = Frame(self.mac_table, width=20)
+            port_num.grid(row=i + 1, column=1)
+            port_label = Label(port_num, text="")
+            self.mac_labels[1].append(port_label)
+
+        for column in self.mac_labels:
+            for label in column:
+                label.pack()
 
     def create_ethernet_frame(self, event, device):
         eframe = Tk()
@@ -176,25 +221,22 @@ class Application:
 
         submit_btn.grid(row=3, column=1, columnspan=2, pady=45)
 
-    def unknown_unicast(self, device, ignore=0):
-        print(device.name, ignore)
-        if isinstance(device, Pc):
-            print(f"pc: {device.name}")
-        elif isinstance(device, Switch):
-            for i in range(4):
-                if (i + 1) != ignore and device.ports[i][0] != "None":
-                    self.unknown_unicast(device.ports[i][2])
-
     def forward_frame(self, device, source_mac, dest_mac, port=0):
-        # Is source address in MAC table? If no, add it; else reset timer
+        self.highlight_red(device)
         if isinstance(device, Router):
-            self.forward_frame(device.ports[0][1], source_mac, dest_mac, port=4)
+            if device.mac == source_mac:
+                self.forward_frame(device.ports[0][1], source_mac, dest_mac, port=4)
+            elif device.mac == dest_mac:
+                print(f"found: {device.name}")
         elif isinstance(device, Pc):
-            self.forward_frame(device.switch, source_mac, dest_mac, port=device.port)
+            if device.mac == source_mac:
+                self.forward_frame(device.switch, source_mac, dest_mac, port=device.port)
+            elif device.mac == dest_mac:
+                print(f"found: {device.name}")
         else:
             if source_mac in device.mac_table:
                 # Reset timer
-                pass
+                print("reset timer")
             else:
                 # Add source_mac, port to mac table
                 device.add_mac_entry(device.ports[port - 1][2].mac, port)
@@ -202,10 +244,12 @@ class Application:
 
             if dest_mac in device.mac_table:
                 # Forward out corresponding port
-                print("found")
+                self.forward_frame(device.ports[device.mac_table[dest_mac] - 1][2], source_mac, dest_mac)
             else:
-                # ARP request
-                self.unknown_unicast(device, ignore=port)
+                # Unknown unicast
+                for i in range(4):
+                    if (i + 1) != port and device.ports[i][0] != "None":
+                        self.forward_frame(device.ports[i][2], source_mac, dest_mac)
 
     def add_device(self, switch):
         editor = Tk()
@@ -265,13 +309,13 @@ class Application:
         frame.destroy()
 
         if edit_type == "add":
-            self.labels[1][int(inputs[0])].configure(text=inputs[2])
+            self.port_labels[1][int(inputs[0])].configure(text=inputs[2])
 
             if inputs[1] == "pc":
                 mac_add = self.mac_oracle.create_mac(inputs[2])
                 pc = self.create_pc(inputs[2], int(inputs[0]), switch)
                 pc.set_info(int(inputs[0]), mac_add)
-                self.labels[2][int(inputs[0])].configure(text=mac_add)
+                self.port_labels[2][int(inputs[0])].configure(text=mac_add)
                 switch.edit_device(int(inputs[0]), inputs[1], pc)
             else:
                 switch.edit_device(int(inputs[0]), inputs[1], inputs[2], "None")
@@ -280,5 +324,5 @@ class Application:
                 switch_new.edit_device(int(inputs[0]), inputs[1], switch.name, "None")
         else:
             switch.remove_device(int(inputs[0]))
-            self.labels[1][int(inputs[0])].configure(text="None")
-            self.labels[2][int(inputs[0])].configure(text="None")
+            self.port_labels[1][int(inputs[0])].configure(text="None")
+            self.port_labels[2][int(inputs[0])].configure(text="None")

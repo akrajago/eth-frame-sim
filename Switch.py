@@ -5,6 +5,7 @@ class Switch:
 
     def __init__(self, name):
         self.image = PhotoImage(file="img/switch.png")
+        self.image_red = PhotoImage(file="img/switch_red.png")
         self.name = name
         self.ports = [["None", "None", "None"] for i in range(4)]
         self.x = None

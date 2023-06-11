@@ -20,10 +20,10 @@ if __name__ == "__main__":
     router.edit_device(1, switch_1, app.mac_oracle.create_mac(router.name))
     switch_1.edit_device(4, "router", router)
 
-    time_left = Label(app.mac_table, text=11)
-    time_left.pack()
-
-    timer(app.mac_table, time_left)
+    # time_left = Label(app.mac_table, text=11)
+    # time_left.pack()
+    #
+    # timer(app.mac_table, time_left)
 
     root.mainloop()
 
