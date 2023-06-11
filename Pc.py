@@ -10,11 +10,16 @@ class Pc:
         self.y = None
         self.canvas_img = None
         self.switch = None
+        self.mac = None
+        self.port = None
 
-    def edit_device(self, switch):
+    def set_info(self, port, address):
+        self.port = port
+        self.mac = address
+
+    def place_pc(self, cnvs, switch, x_coord, y_coord):
         self.switch = switch
-
-    def place_pc(self, cnvs, x_coord, y_coord):
         self.x = x_coord
         self.y = y_coord
         self.canvas_img = cnvs.create_image((self.x, self.y), image=self.image)
+

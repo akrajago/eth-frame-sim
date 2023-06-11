@@ -12,9 +12,12 @@ class Switch:
         self.canvas_img = None
         self.mac_table = {}
 
-    def edit_device(self, port, dev_type, name, mac):
-        self.ports[port - 1][0] = name
-        self.ports[port - 1][1] = mac
+    def add_mac_entry(self, address, port):
+        self.mac_table[address] = port
+
+    def edit_device(self, port, dev_type, device):
+        self.ports[port - 1][0] = device.name
+        self.ports[port - 1][1] = device.mac
         print(dev_type)
 
     def remove_device(self, frame, port):

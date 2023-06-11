@@ -17,8 +17,8 @@ if __name__ == "__main__":
 
     router = app.create_router("Router")
     switch_1 = app.create_switch("Switch 1", 4, router, hrzntl=True)
-    router.edit_device(1, switch_1.name)
-    switch_1.edit_device(4, "router", router.name, app.mac_oracle.create_mac(router.name))
+    router.edit_device(1, switch_1, app.mac_oracle.create_mac(router.name))
+    switch_1.edit_device(4, "router", router)
 
     time_left = Label(app.mac_table, text=11)
     time_left.pack()

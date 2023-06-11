@@ -6,14 +6,16 @@ class Router:
     def __init__(self, name):
         self.image = PhotoImage(file="img/router.png")
         self.name = name
-        self.ports = ["None", "None"]
+        self.ports = [["None", "None"] for i in range(2)]
         self.x = None
         self.y = None
         self.canvas_img = None
-        self.test = None
+        self.mac = None
 
-    def edit_device(self, port, name):
-        self.ports[port - 1] = name
+    def edit_device(self, port, device, address):
+        self.ports[port - 1][0] = device.name
+        self.ports[port - 1][1] = device
+        self.mac = address
 
     def place_router(self, cnvs, x_coord, y_coord):
         self.x = x_coord

@@ -60,7 +60,7 @@ class Application:
             self.canvas.create_line(device_2.port(port_2), device_2.y + 17,
                                     device_1.port(port_1), device_1.y + 17, width=5)
         elif not port_2:
-            device_2.place_pc(self.canvas, device_1.port(port_1), device_1.y + 100)
+            device_2.place_pc(self.canvas, device_1, device_1.port(port_1), device_1.y + 100)
             device_1.ports[int(port_1) - 1][2] = device_2
             self.canvas.create_line(device_1.port(port_1), device_1.y + 100,
                                     device_1.port(port_1), device_1.y + 17, width=5)
@@ -76,7 +76,7 @@ class Application:
 
         for i in range(2):
             self.labels[0][i + 1].configure(text=i + 1)
-            self.labels[1][i + 1].configure(text=rtr.ports[i])
+            self.labels[1][i + 1].configure(text=rtr.ports[i][0])
             self.labels[2][i + 1].configure(text="None")
 
             self.labels[0][i + 3].configure(text="")
@@ -170,16 +170,42 @@ class Application:
         else:
             dest_mac = OptionMenu(eframe, dest_mac_address, *available)
             submit_btn = Button(eframe, text="Send frame",
-                                command=lambda: self.quit_eth_window(eframe, source_mac_address, dest_mac_address))
+                                command=lambda: self.quit_eth_window(eframe, device, source_mac_address, dest_mac_address))
 
         dest_mac.grid(row=1, column=2, columnspan=2)
 
         submit_btn.grid(row=3, column=1, columnspan=2, pady=45)
 
-    def forward_frame(self, source_mac, dest_mac):
+    def unknown_unicast(self, device, ignore=0):
+        print(device.name, ignore)
+        if isinstance(device, Pc):
+            print(f"pc: {device.name}")
+        elif isinstance(device, Switch):
+            for i in range(4):
+                if (i + 1) != ignore and device.ports[i][0] != "None":
+                    self.unknown_unicast(device.ports[i][2])
+
+    def forward_frame(self, device, source_mac, dest_mac, port=0):
         # Is source address in MAC table? If no, add it; else reset timer
-        # Is destination address in MAC table? If yes, forward it out corresponding port; else forward out all ports
-        print(source_mac, dest_mac)
+        if isinstance(device, Router):
+            self.forward_frame(device.ports[0][1], source_mac, dest_mac, port=4)
+        elif isinstance(device, Pc):
+            self.forward_frame(device.switch, source_mac, dest_mac, port=device.port)
+        else:
+            if source_mac in device.mac_table:
+                # Reset timer
+                pass
+            else:
+                # Add source_mac, port to mac table
+                device.add_mac_entry(device.ports[port - 1][2].mac, port)
+                print("added")
+
+            if dest_mac in device.mac_table:
+                # Forward out corresponding port
+                print("found")
+            else:
+                # ARP request
+                self.unknown_unicast(device, ignore=port)
 
     def add_device(self, switch):
         editor = Tk()
@@ -244,9 +270,9 @@ class Application:
             if inputs[1] == "pc":
                 mac_add = self.mac_oracle.create_mac(inputs[2])
                 pc = self.create_pc(inputs[2], int(inputs[0]), switch)
-                pc.edit_device(switch)
+                pc.set_info(int(inputs[0]), mac_add)
                 self.labels[2][int(inputs[0])].configure(text=mac_add)
-                switch.edit_device(int(inputs[0]), inputs[1], inputs[2], mac_add)
+                switch.edit_device(int(inputs[0]), inputs[1], pc)
             else:
                 switch.edit_device(int(inputs[0]), inputs[1], inputs[2], "None")
                 switch_new = self.create_switch(inputs[2], int(inputs[0]), switch)
