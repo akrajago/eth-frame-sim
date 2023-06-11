@@ -6,6 +6,7 @@ class Pc:
     def __init__(self, name):
         self.image = PhotoImage(file="img/pc.png")
         self.image_red = PhotoImage(file="img/pc_red.png")
+        self.image_green = PhotoImage(file="img/pc_green.png")
         self.name = name
         self.x = None
         self.y = None

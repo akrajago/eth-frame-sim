@@ -6,11 +6,13 @@ class Switch:
     def __init__(self, name):
         self.image = PhotoImage(file="img/switch.png")
         self.image_red = PhotoImage(file="img/switch_red.png")
+        self.image_green = PhotoImage(file="img/switch_green.png")
         self.name = name
         self.ports = [["None", "None", "None"] for i in range(4)]
         self.x = None
         self.y = None
         self.canvas_img = None
+        self.mac = "None"
         self.mac_table = {}
 
     def add_mac_entry(self, address, port):

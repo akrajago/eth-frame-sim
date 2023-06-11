@@ -6,6 +6,7 @@ class Router:
     def __init__(self, name):
         self.image = PhotoImage(file="img/router.png")
         self.image_red = PhotoImage(file="img/router_red.png")
+        self.image_green = PhotoImage(file="img/router_green.png")
         self.name = name
         self.ports = [["None", "None"] for i in range(2)]
         self.x = None

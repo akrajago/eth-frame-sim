@@ -56,8 +56,11 @@ class Application:
         self.canvas.tag_bind(pc.canvas_img, "<Double-Button-1>", lambda e: self.create_ethernet_frame(e, pc))
         return pc
 
-    def highlight_red(self, device):
-        self.canvas.itemconfigure(device.canvas_img, image=device.image_red)
+    def highlight(self, device, found=False):
+        if not found:
+            self.canvas.itemconfigure(device.canvas_img, image=device.image_red)
+        else:
+            self.canvas.itemconfigure(device.canvas_img, image=device.image_green)
         self.canvas.after(1000, lambda: self.canvas.itemconfigure(device.canvas_img, image=device.image))
 
     def add_link(self, device_1, port_1, device_2, port_2, horizontal=False):
@@ -222,34 +225,34 @@ class Application:
         submit_btn.grid(row=3, column=1, columnspan=2, pady=45)
 
     def forward_frame(self, device, source_mac, dest_mac, port=0):
-        self.highlight_red(device)
+        self.highlight(device)
         if isinstance(device, Router):
             if device.mac == source_mac:
                 self.forward_frame(device.ports[0][1], source_mac, dest_mac, port=4)
             elif device.mac == dest_mac:
-                print(f"found: {device.name}")
+                self.highlight(device, found=True)
         elif isinstance(device, Pc):
             if device.mac == source_mac:
                 self.forward_frame(device.switch, source_mac, dest_mac, port=device.port)
             elif device.mac == dest_mac:
-                print(f"found: {device.name}")
+                self.highlight(device, found=True)
         else:
             if source_mac in device.mac_table:
                 # Reset timer
                 print("reset timer")
             else:
                 # Add source_mac, port to mac table
-                device.add_mac_entry(device.ports[port - 1][2].mac, port)
+                device.add_mac_entry(source_mac, port)
                 print("added")
 
             if dest_mac in device.mac_table:
                 # Forward out corresponding port
-                self.forward_frame(device.ports[device.mac_table[dest_mac] - 1][2], source_mac, dest_mac)
+                self.forward_frame(device.ports[device.mac_table[dest_mac] - 1][2], source_mac, dest_mac, port=device.mac_table[dest_mac])
             else:
                 # Unknown unicast
                 for i in range(4):
                     if (i + 1) != port and device.ports[i][0] != "None":
-                        self.forward_frame(device.ports[i][2], source_mac, dest_mac)
+                        self.forward_frame(device.ports[i][2], source_mac, dest_mac, port=i+1)
 
     def add_device(self, switch):
         editor = Tk()
@@ -318,10 +321,10 @@ class Application:
                 self.port_labels[2][int(inputs[0])].configure(text=mac_add)
                 switch.edit_device(int(inputs[0]), inputs[1], pc)
             else:
-                switch.edit_device(int(inputs[0]), inputs[1], inputs[2], "None")
                 switch_new = self.create_switch(inputs[2], int(inputs[0]), switch)
                 self.devices.append(switch_new)
-                switch_new.edit_device(int(inputs[0]), inputs[1], switch.name, "None")
+                switch.edit_device(int(inputs[0]), inputs[1], switch_new)
+                switch_new.edit_device(int(inputs[0]), inputs[1], switch)
         else:
             switch.remove_device(int(inputs[0]))
             self.port_labels[1][int(inputs[0])].configure(text="None")
