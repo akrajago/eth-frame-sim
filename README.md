@@ -29,7 +29,7 @@ NOTE: since this application is still in the development phase, it has not been 
 ### Example Cases
 1) Sending Ethernet frames in a network with a single router
    - NOTE: each entry stays in the MAC table for 30 seconds (change `self.timer` in `Switch.py` to modify this), and you must click the switch again to see the table's current status
-
+   
 Let's start by adding 3 PCs to Switch 1: PC-A, PC-B, and PC-C.  
 ***Frame 1: PC-A to Router***  
 Since Router's MAC address isn't in Switch 1's MAC address table, it sends the frame as an unknown unicast. We can see that Switch 1's MAC address table now contains Router's MAC address.  
