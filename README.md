@@ -25,3 +25,23 @@ NOTE: since this application is still in the development phase, it has not been 
   - Click the "add device" button to add a PC or switch to one of the switch's ports
 - PC:
   - Double click a PC to create an Ethernet frame originating from  it
+
+### Example Cases
+1) Sending Ethernet frames in a network with a single router
+   - NOTE: each entry stays in the MAC table for 30 seconds (change `self.timer` in `Switch.py` to modify this), and you must click the switch again to see the table's current status
+
+Let's start by adding 3 PCs to Switch 1: PC-A, PC-B, and PC-C.  
+***Frame 1: PC-A to Router***  
+Since Router's MAC address isn't in Switch 1's MAC address table, it sends the frame as an unknown unicast. We can see that Switch 1's MAC address table now contains Router's MAC address.  
+Let's now send a response frame from Router to PC-A  
+***Frame 2: Router to PC-A***   
+As we can see, Switch 1's MAC address table now contains the MAC addresses for both PC-A and Router.  
+Let's send a frame from PC-A to PC-B.  
+***Frame 3: PC-A to PC-B***  
+Since PC-B isn't in Switch 1's MAC address table, it sends the frame out as an unknown unicast. As expected, the timer for PC-A's entry is reset.    
+Like before, let's send a response back, this time from PC-B to PC-A.  
+***Frame 4: PC-B to PC-A***  
+Since PC-B is not in Switch 1's MAC address table, it gets added. Since PC-A is already in the table, the frame travels from PC-A to PC-B without going to PC-C or Router.  
+Finally, let's let the entry for Router expire.  
+***Frame 5: PC-A to Router***   
+Now, when we send a frame from PC-A to Router, it is again sent as an unknown unicast.

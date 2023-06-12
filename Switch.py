@@ -9,7 +9,7 @@ class Switch:
         self.image_green = PhotoImage(file="img/switch_green.png")
         self.name = name
         self.ports = [["None", "None", "None"] for i in range(4)]
-        self.timer = 10
+        self.timer = 30
         self.x = None
         self.y = None
         self.canvas_img = None

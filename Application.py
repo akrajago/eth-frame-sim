@@ -112,6 +112,7 @@ class Application:
         for j in range(10):
             self.mac_labels[0][j + 1].configure(text="")
             self.mac_labels[1][j + 1].configure(text="")
+            self.mac_labels[2][j + 1].configure(text="")
 
     def on_click_switch(self, switch):
         for i in range(4):
