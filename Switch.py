@@ -9,19 +9,37 @@ class Switch:
         self.image_green = PhotoImage(file="img/switch_green.png")
         self.name = name
         self.ports = [["None", "None", "None"] for i in range(4)]
+        self.timer = 10
         self.x = None
         self.y = None
         self.canvas_img = None
         self.mac = "None"
         self.mac_table = {}
 
-    def add_mac_entry(self, address, port):
-        self.mac_table[address] = port
+    def highlight_switch(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image_green)
 
-    def edit_device(self, port, dev_type, device):
+    def unhighlight_switch(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image)
+
+    def add_mac_entry(self, cnvs, address, port):
+        self.mac_table[address] = [port, self.timer]
+        self.decrement_time(cnvs, address)
+
+    def reset_timer(self, frame, address):
+        self.mac_table[address][1] = self.timer
+        self.decrement_time(frame, address)
+
+    def decrement_time(self, frame, address):
+        if self.mac_table[address][1]:
+            self.mac_table[address][1] -= 1
+            frame.after(1000, lambda: self.decrement_time(frame, address))
+        else:
+            self.mac_table.pop(address)
+
+    def edit_device(self, port, device):
         self.ports[port - 1][0] = device.name
         self.ports[port - 1][1] = device.mac
-        print(dev_type)
 
     def remove_device(self, frame, port):
         self.ports[port - 1] = ["None", "None", "None"]

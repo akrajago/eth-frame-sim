@@ -15,6 +15,12 @@ class Pc:
         self.mac = None
         self.port = None
 
+    def highlight_pc(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image_green)
+
+    def unhighlight_pc(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image)
+
     def set_info(self, port, address):
         self.port = port
         self.mac = address

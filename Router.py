@@ -14,6 +14,12 @@ class Router:
         self.canvas_img = None
         self.mac = None
 
+    def highlight_router(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image_green)
+
+    def unhighlight_router(self, cnvs):
+        cnvs.itemconfigure(self.canvas_img, image=self.image)
+
     def edit_device(self, port, device, address):
         self.ports[port - 1][0] = device.name
         self.ports[port - 1][1] = device
