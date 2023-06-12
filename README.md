@@ -27,7 +27,7 @@ NOTE: since this application is still in the development phase, it has not been 
   - Double click a PC to create an Ethernet frame originating from  it
 
 ### Example Cases
-1) Sending Ethernet frames in a network with a single router
+1) Sending Ethernet frames in a network with a single router (see examples/example_1.mov)
    - NOTE: each entry stays in the MAC table for 30 seconds (change `self.timer` in `Switch.py` to modify this), and you must click the switch again to see the table's current status
    
 Let's start by adding 3 PCs to Switch 1: PC-A, PC-B, and PC-C.  
